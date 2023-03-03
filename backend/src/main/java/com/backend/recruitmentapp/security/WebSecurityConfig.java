@@ -83,7 +83,7 @@ http.cors().and().csrf().disable()
    @Bean
    CorsConfigurationSource corsConfigurationSource() {
       CorsConfiguration configuration = new CorsConfiguration();
-      configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+      configuration.setAllowedOrigins(Arrays.asList("https://recruitmentappg10.azurewebsites.net/"));
       configuration.setAllowedMethods(Arrays.asList("*"));
       configuration.setAllowedHeaders(Arrays.asList("*"));
       configuration.setAllowCredentials(true);
