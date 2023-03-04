@@ -66,7 +66,7 @@ public class AuthController {
      * Verifies credentials and sends a token.
      */
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, javax.servlet.http.HttpServletResponse response) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -86,7 +86,7 @@ public class AuthController {
         Instant expirationTime = Instant.now().plus(Duration.ofHours(1));
         Date expirationDate = Date.from(expirationTime);
         cookie.setMaxAge((int) (expirationDate.getTime() / 1000L));
-
+        response.addCookie(cookie);
         System.out.println("Cookie: " + cookie.getValue());
         System.out.println("jwt: " + jwt);
 
