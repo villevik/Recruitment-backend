@@ -36,11 +36,11 @@ private AuthEntryPointJwt unauthorizedHandler;
 public AuthTokenFilter authenticationJwtTokenFilter() {
 return new AuthTokenFilter();
 }
-/*
+
 @Override
 public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
 authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-}*/
+}
 
 @Bean
 @Override
@@ -79,21 +79,11 @@ http.cors().and().csrf().disable()
               .anyRequest().authenticated()
               .and()
               .httpBasic();
-
-      http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
    }
-
-   @Override
-   public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-      authenticationManagerBuilder
-              .userDetailsService(userDetailsService)
-              .passwordEncoder(passwordEncoder());
-   }
-
    @Bean
    CorsConfigurationSource corsConfigurationSource() {
       CorsConfiguration configuration = new CorsConfiguration();
-      configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://spiffy-mochi-c45fa0.netlify.app"));
+      configuration.setAllowedOrigins(Arrays.asList("https://recruitmentappg10.azurewebsites.net/", "https://spiffy-mochi-c45fa0.netlify.app"));
       configuration.setAllowedMethods(Arrays.asList("*"));
       configuration.setAllowedHeaders(Arrays.asList("*"));
       configuration.setAllowCredentials(true);
