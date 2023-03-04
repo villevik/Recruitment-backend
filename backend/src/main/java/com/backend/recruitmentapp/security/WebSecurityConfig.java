@@ -36,12 +36,12 @@ private AuthEntryPointJwt unauthorizedHandler;
 public AuthTokenFilter authenticationJwtTokenFilter() {
 return new AuthTokenFilter();
 }
-
+/*
 @Override
 public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
 authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
 }
-
+*/
 @Bean
 @Override
 public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -68,18 +68,27 @@ http.cors().and().csrf().disable()
 
 }*/
 
-   @Override
-   protected void configure(HttpSecurity http) throws Exception {
-      http
-              .cors().and()
-              .csrf().disable()
-              // other security configurations
-              .authorizeRequests()
-              .antMatchers("/**").permitAll()
-              .anyRequest().authenticated()
-              .and()
-              .httpBasic();
-   }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .cors().and()
+                .csrf().disable()
+                // other security configurations
+                .authorizeRequests()
+                .antMatchers("/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
+
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Override
+    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        authenticationManagerBuilder
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
+    }
    @Bean
    CorsConfigurationSource corsConfigurationSource() {
       CorsConfiguration configuration = new CorsConfiguration();
