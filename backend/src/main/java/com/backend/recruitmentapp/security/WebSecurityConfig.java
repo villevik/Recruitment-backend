@@ -92,7 +92,7 @@ http.cors().and().csrf().disable()
    @Bean
    CorsConfigurationSource corsConfigurationSource() {
       CorsConfiguration configuration = new CorsConfiguration();
-      configuration.setAllowedOrigins(Arrays.asList("https://recruitmentappg10.azurewebsites.net/", "https://spiffy-mochi-c45fa0.netlify.app", "https://recruitment-frontend-henna.vercel.app/"));
+      configuration.setAllowedOrigins(Arrays.asList("https://recruitmentappg10.azurewebsites.net", "https://spiffy-mochi-c45fa0.netlify.app", "https://recruitment-frontend-henna.vercel.app"));
       configuration.setAllowedMethods(Arrays.asList("*"));
       configuration.setAllowedHeaders(Arrays.asList("*"));
       configuration.setAllowCredentials(true);
