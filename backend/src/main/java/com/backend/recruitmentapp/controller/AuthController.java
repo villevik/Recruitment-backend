@@ -82,7 +82,7 @@ public class AuthController {
         cookie.setPath("/"); // set the cookie's path to "/"
         cookie.setHttpOnly(true); // set the HttpOnly flag to prevent client-side access
         cookie.setSecure(true); // set the Secure flag to ensure the cookie is only sent over HTTPS
-        cookie.setSameSite("None"); // set the SameSite attribute to "None"
+        cookie.setComment("SameSite=None"); // set the SameSite attribute to "None"
 
         // set the cookie's max age to 1 hour
         Instant expirationTime = Instant.now().plus(Duration.ofHours(1));
