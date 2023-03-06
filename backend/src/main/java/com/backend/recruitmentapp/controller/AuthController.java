@@ -35,6 +35,8 @@ import javax.servlet.http.Cookie;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 
 /**
  * Authenticates a user.
@@ -89,6 +91,7 @@ public class AuthController {
         Date expirationDate = Date.from(expirationTime);
         cookie.setMaxAge((int) (expirationDate.getTime() / 1000L));
         response.addCookie(cookie);
+        addSameSiteCookieAttribute(response); // set the SameSite flag to prevent CSRF attacks
         System.out.println("Cookie: " + cookie.getValue());
         System.out.println("jwt: " + jwt);
 
@@ -170,6 +173,18 @@ public class AuthController {
         System.out.println("signout");
         SecurityContextHolder.clearContext();
         return "{\"status\" : \"ok\"}";
+    }
+    private void addSameSiteCookieAttribute(HttpServletResponse response) {
+        Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+        boolean firstHeader = true;
+        for (String header : headers) { // there can be multiple Set-Cookie attributes
+            if (firstHeader) {
+                response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite=None"));
+                firstHeader = false;
+                continue;
+            }
+            response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite=None"));
+        }
     }
 
 }
