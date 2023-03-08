@@ -10,12 +10,35 @@ import java.util.List;
  */
 public interface PersonRepository extends CrudRepository<Person, Integer> {
 
-    Person findPersonById(Integer id);
+    /**
+     * Finds a person by username.
+     *
+     * @param name Username
+     */
     List<Person> findPersonByUsername(String name);
-    List<Person> findPersonByEmail(String name);
+
     Boolean existsByUsername(String username);
+
+    /**
+     * Checks if an email address is taken.
+     *
+     * @param email The email address that is searched for.
+     * @return true if the email address is taken.
+     */
+
     Boolean existsByEmail(String email);
 
+    /**
+     * Checks if a person number has been registered.
+     *
+     * @param pnr The person number that is searched for.
+     * @return true if the person number has been registered.
+     */
     Boolean existsByPnr(String pnr);
+
+    List<Person> findPersonByEmail(String name);
+
+    Person findPersonById(Integer id);
+
 
 }

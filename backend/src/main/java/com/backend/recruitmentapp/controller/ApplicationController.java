@@ -223,7 +223,6 @@ public class ApplicationController {
         {
             throw new Exception ("ERROR: Access denied!");
         }
-        //String role = user.getAuthorities().stream().toList().get(0).toString();
         Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
         String role = authorities.stream().toList().get(0).toString();
         return role;
@@ -235,7 +234,6 @@ public class ApplicationController {
         {
             throw new Exception ("ERROR: Access denied!");
         }
-        //String userName = auth.getUsername();
         UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
         String userName = principal.getUsername();
         return userName;

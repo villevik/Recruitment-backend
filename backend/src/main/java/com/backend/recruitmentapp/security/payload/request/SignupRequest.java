@@ -1,7 +1,9 @@
 package com.backend.recruitmentapp.security.payload.request;
 
 import javax.validation.constraints.*;
-
+/**
+ * Represents a parameter for the registerUser function in the AuthController.
+ */
 public class SignupRequest {
     @NotBlank
     @Size(min = 3, max = 20)

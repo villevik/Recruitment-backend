@@ -1,7 +1,9 @@
 package com.backend.recruitmentapp.security.payload.request;
 
 import javax.validation.constraints.NotBlank;
-
+/**
+ * Represents a parameter for the signIn function in the AuthController.
+ */
 public class LoginRequest
     {
     @NotBlank

@@ -8,8 +8,6 @@ import java.util.Optional;
 /**
  * CRUD repository for the Role entity
  */
-public interface RoleRepository extends CrudRepository<Role, Integer>
-{
-    Role findRoleById(Integer id);
+public interface RoleRepository extends CrudRepository<Role, Integer> {
     Optional<Role> findByName(String name);
 }
