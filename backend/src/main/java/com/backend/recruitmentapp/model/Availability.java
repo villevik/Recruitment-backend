@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 /**
- * Represents the time frame that an applicant is available for duty.
+ * Represents the time frame that an applicant is available for duty and its application status.
  */
 @Entity
 @Table(name = "availability")
@@ -23,6 +23,10 @@ public class Availability {
 
     @Column(name = "to_date")
     private LocalDate toDate;
+
+
+    @Column(name = "status")
+    private String status;
 
     public LocalDate getToDate() {
         return toDate;
@@ -56,10 +60,11 @@ public class Availability {
         this.id = id;
     }
 
-    public Availability(Person person, LocalDate fromDate, LocalDate toDate) {
+    public Availability(Person person, LocalDate fromDate, LocalDate toDate, String status) {
         this.person = person;
         this.fromDate = fromDate;
         this.toDate = toDate;
+        this.status = status;
     }
 
     public Availability()
@@ -67,4 +72,11 @@ public class Availability {
 
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

@@ -3,14 +3,16 @@ package com.backend.recruitmentapp.controller;
 import com.backend.recruitmentapp.model.*;
 import com.backend.recruitmentapp.repository.*;
 import com.backend.recruitmentapp.security.UserDetailsImpl;
-import com.backend.recruitmentapp.security.payload.request.StatusRequest;
+import com.backend.recruitmentapp.security.payload.request.AvailabilityRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,9 +39,6 @@ public class ApplicationController {
     @Autowired
     AvailabilityRepository availabilityRepository;
 
-    @Autowired
-    StatusRepository statusRepository;
-
 
     /**
      * Gets a list of all applications.
@@ -48,20 +47,35 @@ public class ApplicationController {
      */
     @RequestMapping("/listApplications")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json")
-    public String listApplications() {
-        Iterable<Integer> list = availabilityRepository.findAllApplicants(); //ID of all applicants
+    public String listApplications(Authentication auth) {
+
+        String role = null;
+        try {
+            role = authenticateRole(auth);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+
+        if (!role.equals("recruiter")) {
+            return "ERROR: You are not eligible to access this information!";
+        }
+
+        Iterable<Availability> list = availabilityRepository.findAllAvailabilityRows();
 
         StringBuilder sb = new StringBuilder("{ \"Applications\" : [");
         int i = 0;
-        for (Integer person_id : list) {
-            if(i == 100) break; //limit to 100 applications (for testing
-            String status = statusRepository.getStatus(person_id);
-            if (status == null) {
-                status = "unhandled";
-            }
-            sb.append("\"" + personRepository.findPersonById(person_id).getName() + "+"
-                    + personRepository.findPersonById(person_id).getSurname() + "+" + status + "\",");
+        for (Availability availability : list) {
+            if (i == 100) break; //limit to 100 applications (for testing)
             i++;
+            if (availability.getStatus() == null) {
+                availability.setStatus("unhandled");
+            }
+            if (availability.getPerson() == null) {
+                continue;
+            }
+            sb.append("\"" + availability.getPerson().getName() + "+" + availability.getPerson().getSurname() + "+" +
+                    availability.getStatus() + /*"+" + availability.getId() +*/ "\",");
+
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("]}");
@@ -75,17 +89,24 @@ public class ApplicationController {
      *
      * @param applicantData competences, experiences, fromDate, toDate
      */
+    @Transactional
     @RequestMapping("/save")
-    public String saveApplicationTest(@Valid @RequestBody Application applicantData) {
+    public String saveApplication(Authentication auth, @Valid @RequestBody Application applicantData) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-        //Object details = auth.getDetails();
-        String userName = principal.getUsername();
-        String role = authorities.stream().toList().get(0).toString();
+        String role = null;
+        try {
+            role = authenticateRole(auth);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
         if (!role.equals("applicant")) {
             return "ERROR: You are not eligible to apply for a job!";
+        }
+        String userName = null;
+        try {
+            userName = authenticateUser(auth);
+        } catch (Exception e) {
+            return e.getMessage();
         }
         ArrayList<String> competences = applicantData.getCompetences();
         ArrayList<Double> experiences = applicantData.getExperiences();
@@ -122,11 +143,8 @@ public class ApplicationController {
         List<Availability> availabilityList = availabilityRepository.findAvailabilitiesByPerson(person);
         if (availabilityList.isEmpty()) {
             // Add to database table: availability
-            Availability availability = new Availability(person, from, to);
+            Availability availability = new Availability(person, from, to, "unhandled");
             availabilityRepository.save(availability);
-            // Add to database table: status
-            Status status = new Status("unhandled", person.getId());
-            statusRepository.save(status);
         } else {
             // Modify row
             Availability availability = availabilityList.get(0);
@@ -140,16 +158,57 @@ public class ApplicationController {
 
     /**
      * Changes the status of an application.
-     * @param statusParam status_id, new status
+     *
+     * @param param AvailabilityRequest
      */
+    @Transactional
     @RequestMapping("/changeStatus")
-    public void changeStatus(@Valid @RequestBody StatusRequest statusParam) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/json")
+    public String changeStatus(@Valid @RequestBody AvailabilityRequest param) {
 
-        Status newStatus = new Status();
-        newStatus.setId(statusParam.getStatus_id());
-        newStatus.setStatus(statusParam.getStatus());
-        newStatus.setPerson_id(statusRepository.findPersonID(statusParam.getStatus_id()));
-        statusRepository.save(newStatus);
+        Integer id = param.getAvailability_id();
+        List<Availability> availabilitiesById = availabilityRepository.findAvailabilitiesById(id);
+        if (availabilitiesById.isEmpty()) {
+            return "ERROR: No such availability_id";
+        }
+
+        if (availabilitiesById.size() > 1) {
+            return "ERROR: ID not unique";
+        }
+
+        Availability availability = availabilitiesById.get(0);
+        String status = param.getStatus();
+        availability.setStatus(status);
+        availabilityRepository.save(availability);
+        return "OK";
+
+    }
+
+    /**
+     * Resets each status column.
+     * Sets each application status to "unhandled".
+     */
+    @Transactional
+    @RequestMapping("/resetStatuses")
+    public String resetStatuses(Authentication auth) {
+
+        String role = null;
+        try {
+            role = authenticateRole(auth);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        if (!role.equals("recruiter")) {
+            return "ERROR: You are not eligible to access this function!";
+        }
+        Iterable<Availability> availabilities = availabilityRepository.findAllAvailabilityRows();
+
+        for (Availability application : availabilities) {
+
+            application.setStatus("unhandled");
+            availabilityRepository.save(application);
+        }
+        return "OK!";
     }
 
     private LocalDate convertToLocalDate(String inputDate) {
@@ -158,4 +217,31 @@ public class ApplicationController {
         return LocalDate.parse(inputDate, formatter);
     }
 
+    private String authenticateRole(Authentication auth) throws Exception {
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+        String role = authorities.stream().toList().get(0).toString();*/
+        if (auth == null)
+        {
+            throw new Exception ("ERROR: Access denied!");
+        }
+        //String role = user.getAuthorities().stream().toList().get(0).toString();
+        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+        String role = authorities.stream().toList().get(0).toString();
+        return role;
+    }
+
+    private String authenticateUser(Authentication auth) throws Exception {
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
+        String userName = principal.getUsername();*/
+        if (auth == null)
+        {
+            throw new Exception ("ERROR: Access denied!");
+        }
+        //String userName = auth.getUsername();
+        UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
+        String userName = principal.getUsername();
+        return userName;
+    }
 }
