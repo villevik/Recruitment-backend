@@ -61,7 +61,7 @@ public class ApplicationController {
             }
             sb.append("\"" + personRepository.findPersonById(person_id).getName() + "+"
                     + personRepository.findPersonById(person_id).getSurname() + "+" + status + "\",");
-            i++
+            i++;
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("]}");
