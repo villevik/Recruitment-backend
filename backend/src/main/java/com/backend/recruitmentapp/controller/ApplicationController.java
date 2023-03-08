@@ -218,9 +218,7 @@ public class ApplicationController {
     }
 
     private String authenticateRole(Authentication auth) throws Exception {
-        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-        String role = authorities.stream().toList().get(0).toString();*/
+
         if (auth == null)
         {
             throw new Exception ("ERROR: Access denied!");
@@ -232,9 +230,7 @@ public class ApplicationController {
     }
 
     private String authenticateUser(Authentication auth) throws Exception {
-        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl principal = (UserDetailsImpl) auth.getPrincipal();
-        String userName = principal.getUsername();*/
+
         if (auth == null)
         {
             throw new Exception ("ERROR: Access denied!");
