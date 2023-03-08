@@ -52,15 +52,16 @@ public class ApplicationController {
         Iterable<Integer> list = availabilityRepository.findAllApplicants(); //ID of all applicants
 
         StringBuilder sb = new StringBuilder("{ \"Applications\" : [");
-
+        int i = 0;
         for (Integer person_id : list) {
+            if(i == 100) break; //limit to 100 applications (for testing
             String status = statusRepository.getStatus(person_id);
             if (status == null) {
                 status = "unhandled";
             }
             sb.append("\"" + personRepository.findPersonById(person_id).getName() + "+"
                     + personRepository.findPersonById(person_id).getSurname() + "+" + status + "\",");
-
+            i++
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("]}");
